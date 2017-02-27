@@ -55,22 +55,16 @@ echo $notif;
 ?>
 
 <form method="post" action="add-so.php?action=add">
-    Item Code <input name="itemcode" type="text">
+    Item Code <input name="itemcode" type="text" onkeyup="autofill()" id="itemcode">
     <br>
-    Description <input type="text" name="input">
+    Description <input type="text" name="input" id="desc">
     <br>
-    Quantity <input type="text" name="qty">
+    Quantity <input type="text" name="qty" id="qty">
     <br>
-    Price <input type="text" name="price">
+    Price <input type="text" name="price" id="price">
     <br>
     <input type="submit" name="btn-submit" value="Tambah">
 </form>
-
-<?php
-if(isset($_SESSION['produk_item'])):
-    $subtotal = 0;
-    $total = 0;
-?>
 
 <table border="1">
     <thead>
@@ -83,7 +77,12 @@ if(isset($_SESSION['produk_item'])):
         </tr>
     </thead>
     <tbody>
-    <?php foreach ($_SESSION['produk_item'] as $v): ?> 
+<?php
+if(isset($_SESSION['produk_item'])):
+    $subtotal = 0;
+    $total = 0;
+    foreach ($_SESSION['produk_item'] as $v):
+?> 
         <tr>
             <td><?php echo $v['itemcode']; ?></td>
             <td><?php echo $v['desc']; ?></td>
@@ -91,16 +90,40 @@ if(isset($_SESSION['produk_item'])):
             <td><?php echo $v['price']; ?></td>
             <td><?php echo $subtotal = $v['qty']*$v['price']; ?></td>
         </tr>
-    <?php 
+<?php 
         $total += $subtotal;
     endforeach; 
-    ?>
+endif;
+?>
         <tr>
             <td colspan="4">Total</td>
+<?php $total = isset($total)?$total:FALSE; ?>
             <td><?php echo $total; ?></td>
         </tr>
     </tbody>
 </table>
 <a href="add-so.php?action=hapus">Hapus Data</a>
 
-<?php endif; ?>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript">
+    function autofill()
+    {
+        // ambil nilai dari form 
+        var itemcode = $('#itemcode').val();
+        
+        // buat ajax
+        $.ajax({
+            //buat file untuk memproses query ke database
+            url: 'proses.php',
+            data:"itemcode="+itemcode, // membuat parameter URL untuk oper nilai itemcode
+        }).success(function(data){
+            var json = data,
+            //ambil data dari database yg telah diparsing ke bentuk json
+            obj = JSON.parse(json);
+            // masukkan nilai parse json ke form berdasarkan id
+            $('#desc').val(obj.desc);
+            $('#qty').val(obj.qty);
+            $('#price').val(obj.price);
+        });
+    }
+</script>
